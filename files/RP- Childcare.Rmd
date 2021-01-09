@@ -1,0 +1,197 @@
+---
+title: "RP- Childcare"
+author: "Sonam Motiani"
+date: "11/29/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages("easypackages")
+easypackages::packages("data.table", "DT", "dplyr", "mgcv", "ggplot2", "RColorBrewer", "plotly", "parallel", "summarytools", "mltools", prompt = F)
+```
+```{r}
+#reading file combinedprcf
+Combinedprcf <- fread("//Users/sonammotiani/Downloads/Combinedprcf.csv")
+```
+
+
+```{r}
+
+  Q_1_5 <- Combinedprcf %>% 
+  filter (Q == 1) %>%
+  group_by(YEAR99) %>% 
+  summarise(Q_1_5_PR = weighted.mean(Y3,ICSWT26))
+
+  ROC_1_5 <- Combinedprcf %>% 
+  filter (Q == 0) %>%
+  group_by(YEAR99) %>% 
+  summarise(ROC_1_5_PR = weighted.mean(Y3,ICSWT26))
+
+  PR <- left_join( Q_1_5, ROC_1_5, by='YEAR99')
+  
+
+  
+PR_Plot <- ggplot(data = PR, aes(x=YEAR99))+ geom_point(aes(y = ROC_1_5_PR,col = "RoC 1-5 years > 0"), fill = "blue", shape = 25, size = 2) +  geom_line(aes(y = ROC_1_5_PR,col = "RoC 1-5 years > 0")) + geom_point(aes(y = Q_1_5_PR,col = "Q 1-5 years > 0"), fill = "magenta", shape = 22, size = 2) +  geom_line(aes(y = Q_1_5_PR,col = "Q 1-5 years > 0"))+ scale_color_manual( values = c( "magenta","blue"))+labs(title = "Mother's Labor Force Participation", subtitle = "1996 to 2010", x = "Year", y = "Mothers Employed") +  scale_x_continuous(breaks=seq(1996, 2010, 1))
+
+PR_Plot
+
+```
+```{r}
+  Q_1_5 <- Combinedprcf %>% 
+  filter (Q == 1) %>%
+  group_by(YEAR99) %>% 
+  summarise(Q_1_5_QO = weighted.mean(Y3,ICSWT26))
+
+  O_1_5 <- Combinedprcf %>% 
+  filter (O == 1) %>%
+  group_by(YEAR99) %>% 
+  summarise(O_1_5_QO = weighted.mean(Y3,ICSWT26))
+
+  QO <- left_join( Q_1_5, O_1_5, by='YEAR99')
+  
+
+  
+QO_Plot <- ggplot(data = QO, aes(x=YEAR99))+ geom_point(aes(y = O_1_5_QO,col = "O 1-5 years > 0"), fill = "blue", shape = 25, size = 2) +  geom_line(aes(y = O_1_5_QO,col = "O 1-5 years > 0")) + geom_point(aes(y = Q_1_5_QO,col = "Q 1-5 years > 0"), fill = "magenta", shape = 22, size = 2) +  geom_line(aes(y = Q_1_5_QO,col = "Q 1-5 years > 0"))+ scale_color_manual( values =c ("blue","magenta"))+labs(title = "Mother's Labor Force Participation", subtitle = "1996 to 2010", x = "Year", y = "Mothers Employed") + scale_x_continuous(breaks=seq(1996, 2010, 1))
+
+QO_Plot
+
+```
+
+```{r}
+Q_1_5_Earn  <- Combinedprcf %>% 
+  filter (Q == 1) %>%
+  group_by(YEAR99) %>% 
+  summarise(Q_1_5_Earn = weighted.mean(EARNG42,ICSWT26)) 
+  
+  ROC_1_5_Earn  <- Combinedprcf %>% 
+  filter (Q == 0) %>%
+  group_by(YEAR99) %>% 
+  summarise(ROC_1_5_Earn = weighted.mean(EARNG42,ICSWT26))
+  
+
+  Earn <- left_join(Q_1_5_Earn, ROC_1_5_Earn, by='YEAR99') 
+  
+  Earn_Plot <- ggplot(data = Earn, aes(x=YEAR99))+ geom_point(aes(y = ROC_1_5_Earn,col = "RoC 1-5 years > 0"), fill = "blue", shape = 25, size = 2) + geom_line(aes(y = ROC_1_5_Earn,col = "RoC 1-5 years > 0")) + geom_point(aes(y = Q_1_5_Earn,col = "Q 1-5 years > 0"), fill = "magenta", shape = 22, size = 2) + geom_line(aes(y = Q_1_5_Earn,col = "Q 1-5 years > 0")) + scale_color_manual( values = c( "magenta","blue")) + labs(title = "Mother's Annual Earned Income", subtitle = "1996 to 2010", x = "Year", y = "Earned Income") + scale_x_continuous(breaks=seq(1996, 2010, 1)) 
+
+    
+Earn_Plot
+```
+
+```{r}
+Q_1_5_Earn  <- Combinedprcf %>% 
+  filter (Q == 1) %>%
+  group_by(YEAR99) %>% 
+  summarise(Q_1_5_EarnQO = weighted.mean(EARNG42,ICSWT26)) 
+  
+  O_1_5_Earn  <- Combinedprcf %>% 
+  filter (O == 1) %>%
+  group_by(YEAR99) %>% 
+  summarise(O_1_5_EarnQO = weighted.mean(EARNG42,ICSWT26))
+  
+
+  EarnQO <- left_join(Q_1_5_Earn, O_1_5_Earn, by='YEAR99') 
+  
+  EarnQO_Plot <- ggplot(data = EarnQO, aes(x=YEAR99))+ geom_point(aes(y = O_1_5_EarnQO,col = "O 1-5 years > 0"), fill = "blue", shape = 25, size = 2) + geom_line(aes(y = O_1_5_EarnQO,col = "O 1-5 years > 0")) + geom_point(aes(y = Q_1_5_EarnQO,col = "Q 1-5 years > 0"), fill = "magenta", shape = 22, size = 2) + geom_line(aes(y = Q_1_5_EarnQO,col = "Q 1-5 years > 0")) + scale_color_manual( values = c( "blue","magenta")) + labs(title = "Mother's Annual Earned Income", subtitle = "1996 to 2010", x = "Year", y = "Earned Income") + scale_x_continuous(breaks=seq(1996, 2010, 1))
+
+    
+EarnQO_Plot
+```
+
+```{r}
+#Regression
+
+
+
+summary(lm(Y3~Q+I1+Q*I1,data=Combinedprcf,weights=ICSWT26))
+
+
+summary(lm(Y3~Q+I1+Q1999+Q2000+Q2001+Q2002+Q2003+Q2004+Q2005+Q2006+Q2007+Q2008+Q2009+Q2010,data=Combinedprcf,weights=ICSWT26))
+
+summary(lm(EARNG42~Q+I1+Q*I1,data=Combinedprcf,weights=ICSWT26))
+
+
+summary(lm(EARNG42~Q+I1+Q1999+Q2000+Q2001+Q2002+Q2003+Q2004+Q2005+Q2006+Q2007+Q2008+Q2009+Q2010,data=Combinedprcf,weights=ICSWT26))
+
+
+
+```
+```{r}
+newtable <- Combinedprcf %>% filter(HLEVEG18 <= 6 | HLEVEG18 == 97)
+```
+
+
+```{r}
+newtable2 <- Combinedprcf %>% filter(HLEVEG18 > 6 & HLEVEG18 != 97)
+```
+```
+
+```{r}
+
+summary(lm(Y3~Q+I1+Q*I1,data=newtable,weights=ICSWT26))
+
+summary(lm(Y3~Q+I1+Q1999+Q2000+Q2001+Q2002+Q2003+Q2004+Q2005+Q2006+Q2007+Q2008+Q2009+Q2010,data=newtable,weights=ICSWT26))
+
+summary(lm(EARNG42~Q+I1+Q*I1,data=newtable,weights=ICSWT26))
+
+summary(lm(EARNG42~Q+I1+Q1999+Q2000+Q2001+Q2002+Q2003+Q2004+Q2005+Q2006+Q2007+Q2008+Q2009+Q2010,data=newtable,weights=ICSWT26))
+
+
+```
+
+```{r}
+
+summary(lm(Y3~Q+I1+Q*I1,data=newtable2,weights=ICSWT26))
+
+summary(lm(Y3~Q+I1+Q1999+Q2000+Q2001+Q2002+Q2003+Q2004+Q2005+Q2006+Q2007+Q2008+Q2009+Q2010,data=newtable2,weights=ICSWT26))
+
+summary(lm(EARNG42~Q+I1+Q*I1,data=newtable2,weights=ICSWT26))
+
+summary(lm(EARNG42~Q+I1+Q1999+Q2000+Q2001+Q2002+Q2003+Q2004+Q2005+Q2006+Q2007+Q2008+Q2009+Q2010,data=newtable2,weights=ICSWT26))
+
+```
+
+```{r}
+summary(lm(Y3~O+I1+O*I1,data=Combinedprcf,weights=ICSWT26))
+
+
+summary(lm(Y3~O+I1+O1999+O2000+O2001+O2002+O2003+O2004+O2005+O2006+O2007+O2008+O2009+O2010,data=Combinedprcf,weights=ICSWT26))
+
+summary(lm(EARNG42~O+I1+O*I1,data=Combinedprcf,weights=ICSWT26))
+
+
+summary(lm(EARNG42~O+I1+O1999+O2000+O2001+O2002+O2003+O2004+O2005+O2006+O2007+O2008+O2009+O2010,data=Combinedprcf,weights=ICSWT26))
+```
+
+```{r}
+summary(lm(Y3~O+I1+O*I1,data=newtable,weights=ICSWT26))
+
+
+summary(lm(Y3~O+I1+O1999+O2000+O2001+O2002+O2003+O2004+O2005+O2006+O2007+O2008+O2009+O2010,data=newtable,weights=ICSWT26))
+
+summary(lm(EARNG42~O+I1+O*I1,data=newtable,weights=ICSWT26))
+
+
+summary(lm(EARNG42~O+I1+O1999+O2000+O2001+O2002+O2003+O2004+O2005+O2006+O2007+O2008+O2009+O2010,data=newtable,weights=ICSWT26))
+
+```
+
+```{r}
+summary(lm(Y3~O+I1+O*I1,data=newtable2,weights=ICSWT26))
+
+
+summary(lm(Y3~O+I1+O1999+O2000+O2001+O2002+O2003+O2004+O2005+O2006+O2007+O2008+O2009+O2010,data=newtable2,weights=ICSWT26))
+
+summary(lm(EARNG42~O+I1+O*I1,data=newtable2,weights=ICSWT26))
+
+
+summary(lm(EARNG42~O+I1+O1999+O2000+O2001+O2002+O2003+O2004+O2005+O2006+O2007+O2008+O2009+O2010,data=newtable,weights=ICSWT26))
+```
+
